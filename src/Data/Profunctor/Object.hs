@@ -16,7 +16,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Control.Profunctor.Object where
+module Data.Profunctor.Object where
 
 --import SystemGame.Generic.GetSet
 

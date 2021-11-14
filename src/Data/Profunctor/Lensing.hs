@@ -17,7 +17,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE Arrows #-}
 
-module Control.Profunctor.Lensing where
+module Data.Profunctor.Lensing where
 
 import GHC.Generics
 
@@ -55,7 +55,7 @@ import Data.Functor.Identity
 import Data.Functor.Contravariant
 import Data.Bifunctor
 
-import Control.Profunctor.Object
+import Data.Profunctor.Object
 
 class Profunctor p => Lensing p s t | p -> s, p -> t where
   lensing :: Functor f => p b a -> (a -> f b) -> s -> f t

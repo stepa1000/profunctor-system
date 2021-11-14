@@ -17,7 +17,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE Arrows #-}
 
-module Control.Profunctor.System.Interact where
+module Data.Profunctor.System.Interact where
 
 import Control.Profunctor.Prelude
 

@@ -148,3 +148,49 @@ instance Profunctor p => AltMonoidal (FreeAltMon p) where
 -- (>||<) :: FreeAltMon p a b -> FreeAltMon p c d -> FreeAltMon p (Either a c) (Either b d)
 
 type FreeAltAndMon p = FreeAltMon (FreeMon p)
+
+-- PAllAltMon
+
+data PAllAltDay p q s t = forall a b c d.
+  PAllAltDay (p a b) (q c d) (Either b d -> t) (s -> Either a c)
+
+instance Profunctor (PAllAltDay p q) where
+  dimap fl fr (PAllAltDay p q gr gl) = PAllAltDay p q (fr . gr) (gl . fl)
+
+instance ProfunctorFunctor (PAllAltDay p) where
+  promap f (PAllAltDay p q  gr gl) = PAllAltDay p (f q) gr gl
+
+instance HPFunctor (PAllAltDay p) where
+  ddimap = dimap
+
+data FreeAllAltP p q s t =
+    AllAltDoneP (s -> Void) (Void -> t) -- ?????????????????????????????????????????
+  | AllAltMoreP (PAllAltDay p q s t)
+
+allAltCons :: AltMonoidal q => PAllAltDay p q a b -> q c d -> PAllAltDay p q (Either a c) (Either b d)
+allAltCons (PAllAltDay p quv yva bxu) qcd =
+      PAllAltDay p (quv >||< qcd) (bimap yva id . altReassoc) -- _a
+                                     (altAssoc . bimap bxu id) -- _b
+
+instance Profunctor (FreeAllAltP p q) where
+  dimap f g (AllAltDoneP au ub) = AllAltDoneP (au . f) (g . ub)
+  dimap f g (AllAltMoreP day) = AllAltMoreP (dimap f g day)
+
+instance ProfunctorFunctor (FreeAllAltP p) where
+  promap _ (AllAltDoneP su ut) = AllAltDoneP su ut
+  promap nat (AllAltMoreP day) = AllAltMoreP (promap nat day)
+
+instance HPFunctor (FreeAllAltP p) where
+  ddimap = dimap
+
+type FreeAllAltMon p = FixH (FreeAllAltP p)
+
+instance Profunctor p => AltMonoidal (FreeAllAltMon p) where
+  pzero = undefined
+  (InH (AllAltDoneP fv vf)) >||< frcd = dimap gl gr frcd
+    where
+      gl (Right c) = c
+      gl (Left a) = error "AltMonoidal:FreeAltMon:AltDoneP" -- ?????????????????
+      gr = Right
+  (InH (AllAltMoreP pad)) >||< frcd = InH $ AllAltMoreP $ allAltCons pad frcd
+-- (>||<) :: FreeAltMon p a b -> FreeAltMon p c d -> FreeAltMon p (Either a c) (Either b d)

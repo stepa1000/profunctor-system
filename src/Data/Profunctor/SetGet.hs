@@ -16,7 +16,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Control.Profunctor.SetGet where
+module Data.Profunctor.SetGet where
 
 --import SystemGame.Generic.GetSet
 
@@ -51,7 +51,7 @@ import Data.Functor.Identity
 import Data.Functor.Contravariant
 import Data.Bifunctor
 
-import Control.Profunctor.Object
+import Data.Profunctor.Object
 
 {-}
 data Method' pu o as bs = ( All SListI as

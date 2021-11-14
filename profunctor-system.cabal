@@ -25,15 +25,17 @@ source-repository head
 
 library
   exposed-modules:
-      Control.Profunctor.Lensing
+      Control.Profunctor.Foldable
       Control.Profunctor.Monoidal
-      Control.Profunctor.Object
       Control.Profunctor.Postlude
       Control.Profunctor.Prelude
-      Control.Profunctor.SetGet
-      Control.Profunctor.System.Foldable
-      Control.Profunctor.System.Interact
-      Control.Profunctor.System.Run
+      Control.Profunctor.ProCofree
+      Control.Profunctor.SOP
+      Data.Profunctor.Lensing
+      Data.Profunctor.Object
+      Data.Profunctor.SetGet
+      Data.Profunctor.System.Interact
+      Data.Profunctor.System.Run
   other-modules:
       Paths_profunctor_system
   hs-source-dirs:
@@ -42,6 +44,7 @@ library
       base >=4.7 && <5
     , bifunctors
     , comonad
+    , generics-sop
     , lens
     , mtl
     , profunctors
@@ -58,6 +61,7 @@ executable profunctor-system-exe
       base >=4.7 && <5
     , bifunctors
     , comonad
+    , generics-sop
     , lens
     , mtl
     , profunctor-system
@@ -76,6 +80,7 @@ test-suite profunctor-system-test
       base >=4.7 && <5
     , bifunctors
     , comonad
+    , generics-sop
     , lens
     , mtl
     , profunctor-system

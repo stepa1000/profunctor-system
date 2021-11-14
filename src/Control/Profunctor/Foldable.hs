@@ -19,7 +19,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Control.Profunctor.System.Foldable where
+module Control.Profunctor.Foldable where
 
 import Control.Profunctor.Prelude
 import Control.Profunctor.Monoidal
@@ -55,16 +55,42 @@ proGcata :: ( Profunctor t
             )
          => (forall b. ProBase t (w b) :-> w (ProBase t b) )
          -> (ProBase t (w a) :-> a)
-         -> t x y
-         -> a x y
+         -> (t :-> a )
 proGcata (k :: forall b. ProBase t (w b) :-> w (ProBase t b) )
          (g :: ProBase t (w a) :-> a)
-         (t :: t x y) = g $ proextract $ c t
+         = g . proextract . c
   where
     c :: t :-> w (ProBase t (w a))
     c p = k $ promap v $ proProject p
     v :: t :-> w (w a)
     v p2 = produplicate $ promap g $ c p2
+
+proPara :: ( Profunctor t
+           , ProRecursive t
+           , Profunctor a
+           )
+        => (forall b. (b,b) -> b)
+        -> (ProBase t (PDay t a) :-> a)
+        -> (t :-> a)
+proPara fu (t :: ProBase t (PDay t a) :-> a) = p
+  where
+    p :: t :-> a
+    p x = t $ promap v $ proProject x
+    v :: t :-> PDay t a
+    v x = PDay x (p x) fu (\c->(c,c)) -- ?????????
+--    v = _a
+
+proParaFst,proParaSnd :: ( Profunctor t
+              , ProRecursive t
+              , Profunctor a
+              )
+           => (ProBase t (PDay t a) :-> a)
+           -> (t :-> a)
+proParaFst = proPara fst
+proParaSnd = proPara snd
+
+--distHisto :: Functor f => f (Cofree f a) -> Cofree f (f a)
+--distHisto fc = fmap extract fc :< fmap (distHisto . Cofree.unwrap) fc
 
 {-}
 proGpara :: ( Profunctor p

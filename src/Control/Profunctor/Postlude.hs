@@ -1,9 +1,9 @@
 module Control.Profunctor.Postlude
   (module X) where
 
-import Control.Profunctor.Object as X
-import Control.Profunctor.SetGet as X
-import Control.Profunctor.Lensing as X
+--import Control.Profunctor.Object as X
+--import Control.Profunctor.SetGet as X
+--import Control.Profunctor.Lensing as X
 
 import Data.Profunctor as X
 import Data.Profunctor.Monad as X
