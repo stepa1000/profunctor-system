@@ -22,9 +22,20 @@
 module Control.Profunctor.Foldable where
 
 import Control.Profunctor.Prelude
+
 import Control.Profunctor.Monoidal
+import Control.Profunctor.ProCofree
+import Control.Profunctor.ProTuple
 
 import Data.Coerce
+
+type instance ProBase (FixH pp) = pp
+
+instance ProfunctorFunctor pp => ProRecursive (FixH pp) where
+  proProject (InH ppf) = ppf
+
+instance ProfunctorFunctor pp => ProCorecursive (FixH pp) where
+  proEmbed = InH
 
 type family ProBase (p :: * -> * -> *) :: (* -> * -> *) -> * -> * -> *
 
@@ -52,11 +63,12 @@ proGcata :: ( Profunctor t
             , ProfunctorComonad w
             , Profunctor (ProBase t (w a))
             , Profunctor a
+            , Profunctor (w a)
             )
-         => (forall b. ProBase t (w b) :-> w (ProBase t b) )
+         => (forall b. Profunctor b => ProBase t (w b) :-> w (ProBase t b) )
          -> (ProBase t (w a) :-> a)
          -> (t :-> a )
-proGcata (k :: forall b. ProBase t (w b) :-> w (ProBase t b) )
+proGcata (k :: forall b. Profunctor b => ProBase t (w b) :-> w (ProBase t b) )
          (g :: ProBase t (w a) :-> a)
          = g . proextract . c
   where
@@ -64,6 +76,19 @@ proGcata (k :: forall b. ProBase t (w b) :-> w (ProBase t b) )
     c p = k $ promap v $ proProject p
     v :: t :-> w (w a)
     v p2 = produplicate $ promap g $ c p2
+
+proParaTuple :: ( Profunctor t
+           , ProRecursive t
+           , Profunctor a
+           )
+        => (ProBase t (ProTuple t a) :-> a)
+        -> (t :-> a)
+proParaTuple (t :: ProBase t (ProTuple t a) :-> a) = p
+  where
+    p :: t :-> a
+    p x = t $ promap v $ proProject x
+    v :: t :-> ProTuple t a
+    v x = ProTuple x (p x)
 
 proPara :: ( Profunctor t
            , ProRecursive t
@@ -89,35 +114,40 @@ proParaFst,proParaSnd :: ( Profunctor t
 proParaFst = proPara fst
 proParaSnd = proPara snd
 
---distHisto :: Functor f => f (Cofree f a) -> Cofree f (f a)
---distHisto fc = fmap extract fc :< fmap (distHisto . Cofree.unwrap) fc
+proHisto :: ( Profunctor a
+            , ProRecursive t
+            , HPFunctor (ProBase t)
+            , Profunctor t
+            , Profunctor (ProBase t (ProCofree (ProBase t) a))
+            )
+         => (ProBase t (ProCofree (ProBase t) a) :-> a) -> (t :-> a)
+proHisto = proGcata proDistHisto
 
-{-}
-proGpara :: ( Profunctor p
-            , ProRecursive p
-            , ProCorecursive p
-            , ProfunctorComonad w
-            ) =>
+{-
+proHisto :: ( Profunctor a
+            , ProRecursive t
+            , HPFunctor (ProBase t)
+            , Profunctor t
+            , Profunctor (ProBase t (ProCofree (ProBase t) a))
+            )
+         => (ProBase t (ProCofree (ProBase t) a) :-> a) -> (t :-> a)
+proHisto (f :: ProBase t (ProCofree (ProBase t) a) x y -> a x y) = (
+   proGcata :: (forall b. ProBase t (ProCofree (ProBase t) b) :-> ProCofree (ProBase t) (ProBase t b) )
+            -> (ProBase t (ProCofree (ProBase t) a) x y -> a x y)
+            -> t x y -> a x y
+  )
+  (proDistHisto :: forall b. Profunctor b => ProBase t (ProCofree (ProBase t) b) x y
+                -> ProCofree (ProBase t) (ProBase t b) x y
+  ) f
 -}
 
---type (:-<>) p q = forall a b. (Semigroup a,Semigroup b) => p a b -> q a b
-{-}
-proCataMon :: ( Profunctor t
-              , ProRecursive t
-              ) => (FreeMon (ProBase t) :-> a) -> (t :-> a)
-proCataMon (f :: FreeMon (ProBase t) :-> a) t = f $ proCata InH t
--}
-{-}
-proPara :: ( Profunctor t
-           , ProRecursive t
-           ) => (ProBase t (PDay t a) :-<> a) -> (t :-<> a)
-proPara (t :: ProBase t (PDay t a) :-<> a) = p
-  where
-    p :: t :-<> a
-    p x = t . promap (\q-> PDay q (p q) (uncurry (<>) ) (\c->(c,c)) ) $ proProject x
--}
---      where
---        g q a = PDay q a (uncurry (<>) ) (\c->(c,c))
+proDistHisto :: ( ProfunctorFunctor pp
+                , HPFunctor pp
+                , Profunctor a
+                )
+             => pp (ProCofree pp a) :-> ProCofree pp (pp a)
+proDistHisto (fc :: pp (ProCofree pp a) x y) = ProCofree $ PProTuple
+  (promap proextract fc :^  promap (proDistHisto . proUnwrap) fc)
 
 class ProfunctorFunctor (ProBase p) => ProCorecursive p where
   proEmbed :: ProBase p p :-> p
@@ -130,3 +160,27 @@ proAna (g :: a :-> ProBase t a) = a
   where
     a :: a :-> t
     a p = proEmbed $ promap a $ g p
+
+-- Changing representation
+
+proHoist :: ( ProRecursive s
+            , ProCorecursive t
+            , Profunctor t
+            , Profunctor s
+            )
+         => (forall a. Profunctor a => ProBase s a :-> ProBase t a) -> (s :-> t)
+proHoist n = proCata (proEmbed . n)
+
+-- ProBase
+
+type instance ProBase (ProCofree pp p) = PProTuple p pp
+
+instance ( ProfunctorFunctor pp
+         , HPFunctor pp
+         ) => ProRecursive (ProCofree pp p) where
+  proProject (ProCofree (PProTuple (p :^ pp) )) = PProTuple (p :^ pp)
+
+instance ( ProfunctorFunctor pp
+         , HPFunctor pp
+         ) => ProCorecursive (ProCofree pp p) where
+  proEmbed = ProCofree

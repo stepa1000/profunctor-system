@@ -36,7 +36,7 @@ class AltMonoidal p where
   (>||<) :: p a b -> p c d -> p (Either a c) (Either b d)
 
 class ProfunctorFunctor pp => HPFunctor pp where
-  ddimap :: (s -> a) -> (b -> t) -> pp p a b -> pp p s t
+  ddimap :: Profunctor p => (s -> a) -> (b -> t) -> pp p a b -> pp p s t
   default ddimap :: Profunctor (pp p) => (s -> a) -> (b -> t) -> pp p a b -> pp p s t
   ddimap = dimap
 
@@ -53,6 +53,13 @@ instance HPFunctor (PDay p) where
   ddimap = dimap
 
 newtype FixH pp a b = InH { outH :: pp (FixH pp) a b }
+
+fixpromap :: ( HPFunctor pp
+             , ProfunctorFunctor pp
+             , HPFunctor qq
+             )
+          => (forall a. Profunctor a => pp a :-> qq a) -> (FixH pp :-> FixH qq)
+fixpromap f (InH ppf ) = InH $ f $ promap (fixpromap f) ppf
 
 instance HPFunctor pp => Profunctor (FixH pp) where
     dimap f g (InH pp) = InH (ddimap f g pp)

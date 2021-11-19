@@ -21,3 +21,10 @@ import Data.Bifunctor.Product as X
 
 import Data.Bifunctor.Tannen as X
 import Data.Profunctor.Composition as X
+
+import Control.Profunctor.Monoidal as X
+import Control.Profunctor.Foldable as X
+import Control.Profunctor.SOP as X
+import Control.Profunctor.ProTuple as X
+
+import Control.Profunctor.ProCofree as X

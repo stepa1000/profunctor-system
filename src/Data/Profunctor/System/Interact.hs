@@ -19,92 +19,80 @@
 
 module Data.Profunctor.System.Interact where
 
-import Control.Profunctor.Prelude
+import Control.Profunctor.Postlude
 
-newtype Interact s p x y = Interact {interact :: p (x,s) (y,s)}
+class Interacted p s | p -> s where
+  interacted :: (a -> s -> (x,s)) -> (y -> s -> (b,s)) -> p x y -> p a b
+  copuSt :: p x y -> p x (y,s)
+  copuSt = interacted (\x s->(x,s)) (\y s->((y,s),s) )
+
+instance Profunctor p => Interacted (Interact s p) s where
+  interacted stx sty (Interact p) = Interact $ dimap (uncurry stx) (uncurry sty) p
+--  interated (Interact p) = dimap (\(x,s)->((x,s),s) ) () p
+--  unInterated (Interact p) = dimap
+
+newtype InterList p a b = InterList {unInterList :: p a b}
+newtype InterHead p a b = InterHead {unInterHead :: p a b}
+
+instance Profunctor p => Interacted (InterList (Interacting s p)) [s] where
+  interacted stl str = InterList . fromListInteracting . interacted stl str . toListInteracting . unInterList
+
+instance Profunctor p => Interacted (InterHead (Interacting s p)) s where
+  interacted stl str (InterHead (InH (ProZero (ProLeft p) ) )) = InterHead $
+    InH $ ProZero $ ProLeft $ interacted stl str p
+
+newtype Interact s p x y = Interact {unInteract :: p (x,s) (y,s)}
 
 instance Profunctor p => Profunctor (Interact s p) where
   dimap fl fr (Interact p) = Interact $ dimap (first' fl) (first' fr) p
 
-data FixPro p a b = FixPro {unFixPro :: p (FixPro p) a b}
+instance ProfunctorFunctor (Interact s) where
+  promap f (Interact p) = Interact $ f p
 
-instance Profunctor (p (FixPro p)) => Profunctor (FixPro p) where
-  dimap fl fr (FixPro pp) = FixPro $ dimap fl fr pp -- RECURSION PROFUNCTOR
+instance HPFunctor (Interact s) where
+  ddimap = dimap
 
-data ProEither (p :: * -> * -> *) (q :: * -> * -> *) a b = ProLeft (p a b)
-                                                         | ProRight (q a b)
+type Interacting s p = FixH (ProZero p (Interact s))
 
-newtype ProZero p (pn :: (* -> * -> *) -> * -> * -> *) fp a b = ProZero
-  {unProZero :: ProEither (pn fp) p a b}
+-- isoListInteracting ::
 
-instance ( Profunctor p
-         , Profunctor (pn fp)
-         ) => Profunctor (ProZero p pn fp) where
-  dimap fl fr (ProZero (ProLeft ipf)) = ProZero $ ProLeft $ dimap fl fr ipf
-  dimap fl fr (ProZero (ProRight ipf)) = ProZero $ ProRight $ dimap fl fr ipf
-
-newtype FixProZero (p :: * -> * -> *) (pn :: (* -> * -> *) -> * -> * -> *) a b = FixProZero
-  {unFixProZero :: FixPro (ProZero p pn) a b}
-{-}
-instance ( Profunctor p
-         , Profunctor (ProZero p pn (FixPro ) )
-         )
--}
-newtype Interacting' s p fp x y = Interacting'
-  {unInteracting' :: ProEither (Interact s fp) p x y}
-
-instance Profunctor p
-  => Profunctor (Interacting' s p (FixPro (Interacting' s p) )) where
-  dimap fl fr (Interacting' (ProLeft ipf)) = Interacting' $ ProLeft $ dimap fl fr ipf
-  dimap fl fr (Interacting' (ProRight p)) = Interacting' $ ProRight $ dimap fl fr p
-
-newtype Interacting s p x y = Interacting {unInteracting :: FixPro (Interacting' s p) x y}
-
-instance Profunctor p => Profunctor (Interacting s p) where
-  dimap fl fr (Interacting ip) = Interacting $ dimap fl fr ip
-{-}
-getInteract' :: Interacting s p x y -> Interacting' s (Interacting s p x y) x y
-getInteract' inter =
-
-down :: Profunctor p
-     => Int
-     -> (Interacting s p x y -> Interacting s x a y)
-     -> Interacting s p x y -> Interacting s x a y
-down i f (Interacting a) = Interacting $
+toListInteracting :: Profunctor p => Interacting s p x y -> ProWith Int (Interact [s] p) x y
+toListInteracting = proCata f
   where
-    g 0 n = f n
-    g j (FixPro (ProLeft n) ) | i > 0 = Interacting $ FixPro $ ProLeft $ g (j-1) n
--}
---lmodifyInt :: Int -> ((x,s) -> (x,s)) -> Interacting s p x y -> Interacting s x a y
---lmodifyInt i fl =
-{-}
-newtype ProFold a p x y = ProFold {unProFold :: p (x,a) y}
+    f (ProZero (ProLeft (Interact a ) )) = mapProWith (+1) $ interacted fl fr a
+      where
+        fl x (s:ls) = ((x,s) ,ls)
+        fr (y,s) ls = (y,s:ls)
+    f (ProZero (ProRight a )) = ProWith 0 $ Interact $ dimap fl fr a
+      where
+        fl = fst
+        fr y = (y,[])
 
-instance Profunctor p => Profunctor (ProFold a p) where
-  dimap fl fr (ProFold p) = ProFold $ dimap (first' fl) fr p
+type instance ProBase (FixH (ProZero p (Interact s))) = ProZero p (Interact s)
 
-newtype ProFolding' a p fp x y = ProFolding'
-  {unProFolding' :: ProZero p (ProFold a) fp x y
+fromListInteracting :: Profunctor p => ProWith Int (Interact [s] p) x y -> Interacting s p x y
+fromListInteracting = proAna f
+  where
+    f (ProWith i (p :: Interact [s] p x y) )
+      | i > 1 =  ProZero $ ProLeft $ Interact $ ProWith (i-1) $ interacted fl fr p
+      | i == 0 = ProZero $ ProRight $ dimap lf rf $ unInteract p
+      | i < 1 = ProZero $ ProLeft $ Interact $ ProWith (-42) $ interacted fl fr p
+        where
+          fl :: (x,s) -> [s] -> (x,[s])
+          fl (x,s) ls = (x,s:ls)
+          fr y (s:ls) = ((y,s),ls)
+          lf x = (x,[])
+          rf (y,[]) = y
+          rf _ = error "setListInteracting:f:rf"
 
+data ProWith a p x y = ProWith a (p x y)
+unProWith (ProWith a p) = (a,p)
 
-instance ( Profunctor p
-         , Profunctor (FixPro (ProFolding' a p) )
-         ) => Profunctor (ProFolding' a p (FixPro (ProFolding' a p) ) ) where
-  dimap fl fr (ProFolding' (ProZero (ProLeft fp ))) = ProFolding' $
-    ProZero $ ProLeft $ dimap fl fr fp
+mapProWith :: (a -> b) -> ProWith a p x y -> ProWith b p x y
+mapProWith f (ProWith a p) = ProWith (f a) p
 
-newtype ProFolding a p x y = ProFolding {unProFolding :: FixPro (ProFolding' a p) x y}
+instance Profunctor p => Profunctor (ProWith a p) where
+  dimap fl fr (ProWith a p) = ProWith a $ dimap fl fr p
 
-instance Profunctor p => Profunctor (ProFolding a p) where
-  dimap fl fr (ProFolding p) = ProFolding $ dimap fl fr p
-
-
-data Attitude s a b p x y = Attitude
-  { attitude :: p a b
-  , toAtt :: (x,s) -> a
-  , fromAtt :: b -> (y,s)
-  }
-
-instance Profunctor p => Profunctor (Attitude s a b p) where
-  dimap fl fr (Attitude att toA fromA ) =
--}
+instance Interacted p s => Interacted (ProWith a p) s where
+  interacted fr fl (ProWith a p) = ProWith a $ interacted fr fl p

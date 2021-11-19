@@ -24,7 +24,43 @@ module Control.Profunctor.ProCofree where
 import Control.Profunctor.Prelude
 import Control.Profunctor.Monoidal
 
+import Control.Profunctor.ProTuple
+
 import Data.Coerce
+
+class ( HPFunctor p
+      , HPFunctor pwf
+      , ProfunctorFunctor p
+      , ProfunctorComonad pwf
+      ) => ProComonadCofree p pwf | pwf -> p where
+  proUnwrap :: pwf a :-> p (pwf a)
+
+instance( HPFunctor pp
+        , ProfunctorFunctor pp
+        ) => ProComonadCofree pp (ProCofree pp) where
+  proUnwrap (ProCofree (PProTuple (p :^ pp))) = pp
+
+newtype ProCofree pp p a b = ProCofree
+  {unProCofree :: PProTuple p pp (ProCofree pp p) a b
+  }
+
+instance ( Profunctor p
+         , HPFunctor pp
+         ) => Profunctor (ProCofree pp p) where
+  dimap dl dr (ProCofree ppt) = ProCofree $ dimap dl dr ppt
+
+instance (HPFunctor pp,ProfunctorFunctor pp) => ProfunctorFunctor (ProCofree pp) where
+  promap f (ProCofree (PProTuple (p :^ pp) )) = ProCofree $ PProTuple (f p :^ promap (promap f) pp)
+
+instance HPFunctor pp => HPFunctor (ProCofree pp) where
+  ddimap = dimap
+
+instance HPFunctor pp => ProfunctorComonad (ProCofree pp) where
+  proextract (ProCofree (PProTuple (p :^ pp) )) = p
+  produplicate (ProCofree (PProTuple (p :^ pp) )) = ProCofree $ PProTuple (w :^ promap produplicate pp)
+    where
+      w = ProCofree $ PProTuple (p :^ pp)
+
 {-}
 data Total a b p x y = Total {unTotal :: (a ~ x, b ~ y) => p x y}
 
