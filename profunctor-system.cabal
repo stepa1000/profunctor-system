@@ -27,6 +27,7 @@ library
   exposed-modules:
       Control.Profunctor.FixHLine
       Control.Profunctor.Foldable
+      Control.Profunctor.Instance.Monoidal
       Control.Profunctor.Monoidal
       Control.Profunctor.Postlude
       Control.Profunctor.Prelude
@@ -36,6 +37,8 @@ library
       Data.Profunctor.Lensing
       Data.Profunctor.Object
       Data.Profunctor.SetGet
+      Data.Profunctor.System.Arrow
+      Data.Profunctor.System.Body
       Data.Profunctor.System.Interact
       Data.Profunctor.System.Read
       Data.Profunctor.System.Run
@@ -47,6 +50,8 @@ library
       base >=4.7 && <5
     , bifunctors
     , comonad
+    , free-algebras
+    , free-category
     , generics-sop
     , lens
     , mtl
@@ -64,6 +69,8 @@ executable profunctor-system-exe
       base >=4.7 && <5
     , bifunctors
     , comonad
+    , free-algebras
+    , free-category
     , generics-sop
     , lens
     , mtl
@@ -83,6 +90,8 @@ test-suite profunctor-system-test
       base >=4.7 && <5
     , bifunctors
     , comonad
+    , free-algebras
+    , free-category
     , generics-sop
     , lens
     , mtl

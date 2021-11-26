@@ -27,6 +27,8 @@ dependencies:
 - mtl
 - lens
 - generics-sop
+- free-category
+- free-algebras
 
 library:
   source-dirs: src
