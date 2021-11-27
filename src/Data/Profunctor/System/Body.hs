@@ -21,7 +21,7 @@ module Data.Profunctor.System.Body where
 
 import Control.Profunctor.Postlude
 
-newtype Body a b p x y = forall x' y'. Body -- ~Coyoneda
+data Body a b p x y = forall x' y'. Body -- ~Coyoneda
   { runBody :: p x' y'
   , toBody :: x -> a
   , toBody' :: a -> x'
@@ -34,12 +34,12 @@ endoBody False fr fl (Body p t t' f f') = Body p (fr . t) t' f (fl . f')
 endoBody True  fr fl (Body p t t' f f') = Body p t (t' . fr) (f . fl) f'
 
 instance Profunctor (Body a b p) where
-  dimap fl fr (Body p t t' f f') = Body p (fl . t) t' (f . fr) f'
+  dimap fl fr (Body p t t' f f') = Body p (t . fl) t' (fr . f) f'
 
 instance ProfunctorFunctor (Body a b) where
-  promap f (Body p t t' f f') = Body (f p) t t' f f'
+  promap pf (Body p t t' f f') = Body (pf p) t t' f f'
 
-instance HPFunctor (Body a b r) where
+instance HPFunctor (Body a b) where
   ddimap = dimap
 
 type Meat a b p = FixH (ProZero p (Body a b))

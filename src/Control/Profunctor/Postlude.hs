@@ -28,3 +28,5 @@ import Control.Profunctor.SOP as X
 import Control.Profunctor.ProTuple as X
 
 import Control.Profunctor.ProCofree as X
+
+import Control.Profunctor.Instance.Monoidal as X

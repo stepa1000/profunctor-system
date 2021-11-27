@@ -197,7 +197,7 @@ instance Profunctor p => AltMonoidal (FreeAllAltMon p) where
   (InH (AllAltDoneP fv vf)) >||< frcd = dimap gl gr frcd
     where
       gl (Right c) = c
-      gl (Left a) = error "AltMonoidal:FreeAltMon:AltDoneP" -- ?????????????????
+      gl (Left a) = error "FreeAllAltMon:FreeAllAltP:AltDoneP" -- ?????????????????
       gr = Right
   (InH (AllAltMoreP pad)) >||< frcd = InH $ AllAltMoreP $ allAltCons pad frcd
 -- (>||<) :: FreeAltMon p a b -> FreeAltMon p c d -> FreeAltMon p (Either a c) (Either b d)
