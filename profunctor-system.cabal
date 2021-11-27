@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           profunctor-system
-version:        0.1.1.0
+version:        0.1.1.1
 description:    Please see the README on GitHub at <https://github.com/githubuser/profunctor-system#readme>
 homepage:       https://github.com/githubuser/profunctor-system#readme
 bug-reports:    https://github.com/githubuser/profunctor-system/issues
