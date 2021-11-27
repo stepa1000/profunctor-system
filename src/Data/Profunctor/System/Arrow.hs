@@ -40,6 +40,9 @@ execProArrow :: Category q -- (Arrow q, ArrowChoice q)
              -> q a b
 execProArrow f (ProArrow q) = foldNatQ f q
 
+liftProArrow :: p a b -> ProArrow p a b
+liftProArrow p = ProArrow $ ConsQ (liftFreeCosmos (R2 p) ) NilQ
+
 instance Category (ProArrow p) where
   id = ProArrow NilQ
   ProArrow a . ProArrow b = ProArrow $ a . b
