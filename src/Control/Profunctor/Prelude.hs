@@ -21,7 +21,6 @@ import Data.Bifunctor.Tannen as X
 import Data.Profunctor.Composition as X
 import Data.Profunctor.Sieve as X
 
-
 import Data.Functor.Compose as X
 
 --assoc ((a,b),c) = (a,(b,c))

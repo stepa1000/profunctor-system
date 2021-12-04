@@ -22,16 +22,13 @@ module Control.Profunctor.Instance.Monoidal where
 
 import Control.Profunctor.Prelude
 import Control.Profunctor.Monoidal
+import Control.Profunctor.Foldable
 
 import Data.Bifunctor
 
 import Data.Void
 
 import Data.Tuple
-
-data FreeSpace v f p q s t = -- FreeAllAltMon (FreeMon p)
-    SGDoneP (s -> v) (v -> t)
-  | SGMoreP (GPDay f p q s t)
 
 -- GPDay (p a b) (q c d) (f b d -> t) (s -> f a c)
 liftFreeCosmos :: p a b -> FreeCosmos (Maybe ()) Or p a b -- FreeProRing???????????
@@ -42,6 +39,32 @@ liftFreeCosmos pab = InH $ SGMoreP $ GPDay pab punit f g
     f (OrA x) = x
     g x = OrAB x ()
 
+joinFreeCosmos :: FreeCosmosOr (FreeCosmosOr p) a b -> FreeCosmosOr p a b
+joinFreeCosmos = proCata f
+  where
+    f (SGDoneP sv vt) = SGDoneP sv vt
+    f (SGMoreP (SGMoreP (GPDay fco a) gr gl)) = dimap (or2Tuple . gl) (gr . uncurry OrAB) $ fco >**< a -- >||< ????
+{-
+FixH (FreeSpace (Maybe ()) Or (FixH (FreeSpace (Maybe ()) Or p)  )  )
+FreeCosmosOr (FreeCosmosOr p) a b
+  = InH (fixA)
+      SGDoneP sv vt
+    | SGMoreP
+        GPDay :: GPDay Or (FixH (FreeSpace (Maybe ()) Or p) ) fixA s t
+          InH (fixB) :: FreeCosmosOr p a b
+              SGDoneP sv2 vt2
+            | GPDay
+                p :: p x x2
+                fixB :: FreeCosmosOr p y y2
+                gr2 :: Or x2 y2 -> b
+                gl2 :: a -> Or x y
+          fixA :: FreeCosmosOr (FreeCosmosOr p) c d
+          gr :: OR b d -> t
+          gl :: s -> Or a c
+
+GPDay (p a b) (q c d) (f b d -> t) (s -> f a c)
+GPDay f p q s t
+-}
 
 instance Profunctor (FreeSpace v f p q) where
   dimap fl fr (SGDoneP f g) = SGDoneP (f . fl) (fr . g)
@@ -83,53 +106,6 @@ instance ProfunctorFunctor (GPDay f p) where
 
 instance HPFunctor (GPDay f p) where
   ddimap = dimap
-
-data Or a b = OrA a
-            | OrB b
-            | OrAB a b
-
-assocOr :: Or (Or a b) c -> Or a (Or b c)
-assocOr (OrAB (OrAB a b) c) = OrAB a (OrAB b c)
-assocOr (OrAB (OrA a) c) = OrAB a (OrB c)
-assocOr (OrAB (OrB b) c) = OrB (OrAB b c)
-assocOr (OrA (OrAB a b)) = OrAB a (OrA b)
-assocOr (OrA (OrA a)) = OrA a
-assocOr (OrA (OrB b)) = OrB (OrA b)
-assocOr (OrB c) = OrB (OrB c)
--- assocOr 0 = 0 ????
-
-reassocOr :: Or a (Or b c) -> Or (Or a b) c
-reassocOr (OrAB a (OrAB b c)) = OrAB (OrAB a b) c
-reassocOr (OrAB a (OrA b)) = OrA (OrAB a b)
-reassocOr (OrAB a (OrB c)) = OrAB (OrA a) c
-reassocOr (OrA a) = OrA (OrA a)
-reassocOr (OrB (OrAB b c)) = OrAB (OrB b) c
-reassocOr (OrB (OrA b)) = OrA (OrB b)
-reassocOr (OrB (OrB c)) = OrB c
-
-firstOr :: (a -> b) -> Or a c -> Or b c
-firstOr f (OrA a) = OrA (f a)
-firstOr f (OrAB a c) = OrAB (f a) c
-secondOr :: (c -> b) -> Or a c -> Or a b
-secondOr f (OrB c) = OrB (f c)
-secondOr f (OrAB a c) = OrAB a (f c)
-
-swapOr :: Or a c -> Or c a
-swapOr (OrAB a c) = OrAB c a
-swapOr (OrA a) = OrB a
-swapOr (OrB c) = OrA c
-
-tuple2Or :: (a,b) -> Or a b
-tuple2Or (a,b) = OrAB a b
-or2Tuple (OrAB a b) = (a,b)
-or2Tuple _ = error "not tuple"
-
-either2Or :: Either a b -> Or a b
-either2Or (Right b) = OrB b
-either2Or (Left a) = OrA a
-or2Either (OrAB a b) = Right b
-or2Either (OrB b) = Right b
-or2Either (OrA a) = Left a
 
 consSpace :: (Monoidal q) -- MonoidalF p f
           => GPDay Or p q a b -> q c d

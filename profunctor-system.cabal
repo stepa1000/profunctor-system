@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           profunctor-system
-version:        0.1.1.1
+version:        0.1.1.3
 description:    Please see the README on GitHub at <https://github.com/githubuser/profunctor-system#readme>
 homepage:       https://github.com/githubuser/profunctor-system#readme
 bug-reports:    https://github.com/githubuser/profunctor-system/issues
@@ -27,17 +27,18 @@ library
   exposed-modules:
       Control.Profunctor.FixHLine
       Control.Profunctor.Foldable
-      Control.Profunctor.Instance.Monoidal
+      Control.Profunctor.Monoid
       Control.Profunctor.Monoidal
+      Control.Profunctor.MonoidalAssoc
       Control.Profunctor.Postlude
       Control.Profunctor.Prelude
       Control.Profunctor.ProCofree
       Control.Profunctor.ProTuple
       Control.Profunctor.SOP
       Data.Profunctor.Lensing
+      Data.Profunctor.Monoid.HashMap
       Data.Profunctor.Object
       Data.Profunctor.SetGet
-      Data.Profunctor.System.Arrow
       Data.Profunctor.System.Body
       Data.Profunctor.System.Interact
       Data.Profunctor.System.Read
@@ -53,9 +54,11 @@ library
     , free-algebras
     , free-category
     , generics-sop
+    , hashable
     , lens
     , mtl
     , profunctors
+    , unordered-containers
   default-language: Haskell2010
 
 executable profunctor-system-exe
@@ -72,10 +75,12 @@ executable profunctor-system-exe
     , free-algebras
     , free-category
     , generics-sop
+    , hashable
     , lens
     , mtl
     , profunctor-system
     , profunctors
+    , unordered-containers
   default-language: Haskell2010
 
 test-suite profunctor-system-test
@@ -93,8 +98,10 @@ test-suite profunctor-system-test
     , free-algebras
     , free-category
     , generics-sop
+    , hashable
     , lens
     , mtl
     , profunctor-system
     , profunctors
+    , unordered-containers
   default-language: Haskell2010

@@ -1,5 +1,5 @@
 name:                profunctor-system
-version:             0.1.1.2
+version:             0.1.1.3
 github:              "githubuser/profunctor-system"
 license:             BSD3
 author:              "Author name here"
@@ -29,6 +29,10 @@ dependencies:
 - generics-sop
 - free-category
 - free-algebras
+- unordered-containers
+- hashable
+#- functor-combinators
+#- semigroupoid-extras
 
 library:
   source-dirs: src

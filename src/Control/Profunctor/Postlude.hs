@@ -27,6 +27,7 @@ import Control.Profunctor.Foldable as X
 import Control.Profunctor.SOP as X
 import Control.Profunctor.ProTuple as X
 
+import Control.Profunctor.Monoid as X
 import Control.Profunctor.ProCofree as X
 
-import Control.Profunctor.Instance.Monoidal as X
+--import Control.Profunctor.Instance.Monoidal as X
