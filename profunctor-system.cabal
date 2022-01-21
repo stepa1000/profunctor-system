@@ -35,22 +35,33 @@ library
       Control.Profunctor.ProCofree
       Control.Profunctor.ProTuple
       Control.Profunctor.SOP
+      Data.Comonad.Universe
+      Data.Free.Arrow
+      Data.Free.FRP.Event
+      Data.Free.FRP.FRL
+      Data.Free.ProFree
       Data.Profunctor.Lensing
       Data.Profunctor.Monoid.HashMap
+      Data.Profunctor.Monoid.Vec
+      Data.Profunctor.Numeric.FAD
       Data.Profunctor.Object
       Data.Profunctor.SetGet
       Data.Profunctor.System.Body
       Data.Profunctor.System.Interact
       Data.Profunctor.System.Read
       Data.Profunctor.System.Run
+      Data.Profunctor.System.Surrounded
   other-modules:
       Paths_profunctor_system
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      async
+    , base >=4.7 && <5
     , bifunctors
     , comonad
+    , fad
+    , fin
     , free-algebras
     , free-category
     , generics-sop
@@ -58,7 +69,10 @@ library
     , lens
     , mtl
     , profunctors
+    , stm
     , unordered-containers
+    , vec
+    , vector
   default-language: Haskell2010
 
 executable profunctor-system-exe
@@ -69,9 +83,12 @@ executable profunctor-system-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      async
+    , base >=4.7 && <5
     , bifunctors
     , comonad
+    , fad
+    , fin
     , free-algebras
     , free-category
     , generics-sop
@@ -80,7 +97,10 @@ executable profunctor-system-exe
     , mtl
     , profunctor-system
     , profunctors
+    , stm
     , unordered-containers
+    , vec
+    , vector
   default-language: Haskell2010
 
 test-suite profunctor-system-test
@@ -92,9 +112,12 @@ test-suite profunctor-system-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      async
+    , base >=4.7 && <5
     , bifunctors
     , comonad
+    , fad
+    , fin
     , free-algebras
     , free-category
     , generics-sop
@@ -103,5 +126,8 @@ test-suite profunctor-system-test
     , mtl
     , profunctor-system
     , profunctors
+    , stm
     , unordered-containers
+    , vec
+    , vector
   default-language: Haskell2010

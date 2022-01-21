@@ -31,6 +31,12 @@ dependencies:
 - free-algebras
 - unordered-containers
 - hashable
+- vec
+- fin
+- fad
+- vector
+- async
+- stm
 #- functor-combinators
 #- semigroupoid-extras
 

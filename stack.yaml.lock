@@ -18,6 +18,13 @@ packages:
       sha256: 03509449c8b58b9200c199bf1b92d4ea644b1c17fdc20e9194fb1fcd89093e87
   original:
     hackage: free-category-0.0.4.3@sha256:44f1f6d5a08f5067768fdddb88c3ac56290361cddb52c23aa552234f34e6717c,2314
+- completed:
+    hackage: fad-1.1.0.1@sha256:e18c0944925e935d47beffaf3ebe260c0dd67930c10e470935c9319b34686dc9,1019
+    pantry-tree:
+      size: 349
+      sha256: 87404777eabd16c7ed45886e8eb002f0e061fe1f7921029d4e80843436b9dde2
+  original:
+    hackage: fad-1.1.0.1@sha256:e18c0944925e935d47beffaf3ebe260c0dd67930c10e470935c9319b34686dc9,1019
 snapshots:
 - completed:
     size: 586286
